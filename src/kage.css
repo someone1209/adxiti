@@ -120,6 +120,7 @@ button, a { font: inherit; }
   background: rgba(118,47,66,.46);
   color: #ffe7e1;
 }
+.sound-toggle.is-playing { box-shadow: 0 0 26px rgba(231,132,161,.15), inset 0 0 15px rgba(245,190,196,.05); }
 .sound-icon { color: #f0b8b5; font-size: 1rem; }
 .dreamscape-copy {
   position: absolute;
@@ -156,7 +157,7 @@ button, a { font: inherit; }
   letter-spacing: -.065em;
   text-shadow: 0 5px 34px rgba(9,5,7,.42);
 }
-.dreamscape-copy h1 em { color: #e5a8ad; font-weight: 500; }
+.dreamscape-copy h1 em { color: #e5a8ad; font-weight: 500; text-shadow: 0 0 30px rgba(231,126,163,.23); }
 .scene-caption {
   margin: 1.4rem 0 2rem;
   color: rgba(247,229,226,.74);
@@ -175,7 +176,7 @@ button, a { font: inherit; }
   color: #d9959d;
   font: italic 1.25rem "Playfair Display", Georgia, serif;
 }
-.memory-rule { width: 2.3rem; height: 1px; background: rgba(220,168,168,.6); }
+.memory-rule { width: 2.3rem; height: 1px; background: rgba(220,168,168,.7); box-shadow: 0 0 9px rgba(243,164,181,.55); }
 .memory-picker {
   position: absolute;
   z-index: 3;
@@ -215,6 +216,11 @@ button, a { font: inherit; }
   border-color: #f0bfc0;
   background: #e6a5ad;
   box-shadow: 0 0 14px rgba(233,156,168,.75);
+}
+.memory-dot.is-active span { animation: memory-glint 2.2s ease-in-out infinite alternate; }
+@keyframes memory-glint {
+  from { box-shadow: 0 0 8px rgba(233,156,168,.5); }
+  to { box-shadow: 0 0 20px rgba(233,156,168,.95), 0 0 34px rgba(230,76,255,.28); }
 }
 .dreamscape-footer {
   bottom: 1.55rem;
@@ -258,6 +264,7 @@ button, a { font: inherit; }
   .scene-caption { margin: .9rem 0 1.2rem; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .memory-dot.is-active span { animation: none; }
   *, *::before, *::after {
     scroll-behavior: auto !important;
     transition-duration: .01ms !important;

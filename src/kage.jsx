@@ -112,6 +112,36 @@ function PhotoOrbit({ selected, onSelect }) {
     );
     scene.add(stars);
 
+    const moteCount = 96;
+    const motePositions = new Float32Array(moteCount * 3);
+    const motes = Array.from({ length: moteCount }, () => ({
+      x: (Math.random() - 0.5) * 18,
+      y: (Math.random() - 0.5) * 11,
+      z: -3.8 + Math.random() * 5.5,
+      speed: 0.08 + Math.random() * 0.16,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    motes.forEach((mote, index) => {
+      motePositions[index * 3] = mote.x;
+      motePositions[index * 3 + 1] = mote.y;
+      motePositions[index * 3 + 2] = mote.z;
+    });
+    const moteGeometry = new THREE.BufferGeometry();
+    moteGeometry.setAttribute("position", new THREE.BufferAttribute(motePositions, 3));
+    const moteField = new THREE.Points(
+      moteGeometry,
+      new THREE.PointsMaterial({
+        color: 0xf5b9d2,
+        size: 0.055,
+        transparent: true,
+        opacity: 0.62,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        sizeAttenuation: true,
+      }),
+    );
+    scene.add(moteField);
+
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const neonDecor = new THREE.Group();
     scene.add(neonDecor);
@@ -128,6 +158,10 @@ function PhotoOrbit({ selected, onSelect }) {
         ));
       }
       const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
+      const outerGlow = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 108, 0.105, 5, false),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.045, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
       const halo = new THREE.Mesh(
         new THREE.TubeGeometry(curve, 108, 0.052, 5, false),
         new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.17, blending: THREE.AdditiveBlending, depthWrite: false }),
@@ -136,15 +170,19 @@ function PhotoOrbit({ selected, onSelect }) {
         new THREE.TubeGeometry(curve, 108, 0.012, 5, false),
         new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.62, blending: THREE.AdditiveBlending, depthWrite: false }),
       );
-      neonDecor.add(halo, core);
-      neonArcs.push({ halo: halo.material, core: core.material, phase });
+      neonDecor.add(outerGlow, halo, core);
+      neonArcs.push({ outer: outerGlow.material, halo: halo.material, core: core.material, phase });
 
-      const bead = new THREE.Mesh(
-        new THREE.SphereGeometry(0.055, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffd7fa, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }),
+      const runnerGlow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.16, 12, 10),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }),
       );
-      scene.add(bead);
-      neonRunners.push({ bead, curve, phase, speed });
+      const bead = new THREE.Mesh(
+        new THREE.SphereGeometry(0.045, 10, 8),
+        new THREE.MeshBasicMaterial({ color: 0xfff0fb, transparent: true, opacity: 0.96, blending: THREE.AdditiveBlending }),
+      );
+      scene.add(runnerGlow, bead);
+      neonRunners.push({ bead, glow: runnerGlow, curve, phase, speed });
     };
 
     addNeonArc({ start: 0.18, end: Math.PI * 1.45, radiusX: 4.75, radiusY: 3.18, depth: -1.12, color: 0xe64cff, phase: 0.2, speed: 0.035 });
@@ -177,6 +215,20 @@ function PhotoOrbit({ selected, onSelect }) {
         card.userData.index = index;
         card.userData.phase = Math.random() * Math.PI * 2;
         if (memory.rotate) card.rotation.z = memory.rotation ?? -Math.PI / 2;
+
+        const aura = new THREE.Mesh(
+          new THREE.PlaneGeometry(width + 0.48, height + 0.6),
+          new THREE.MeshBasicMaterial({
+            color: index % 2 ? 0xe76fbd : 0xffbb91,
+            transparent: true,
+            opacity: 0.045,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          }),
+        );
+        aura.position.z = -0.065;
+        card.userData.aura = aura.material;
+        card.add(aura);
 
         const frame = new THREE.Mesh(
           new THREE.PlaneGeometry(width + 0.16, height + 0.28),
@@ -305,17 +357,32 @@ function PhotoOrbit({ selected, onSelect }) {
         card.rotation.x += (rotationX - card.rotation.x) * 0.075;
         card.scale.x += (scale - card.scale.x) * (transition ? 0.2 : 0.055);
         card.scale.y += (scale - card.scale.y) * (transition ? 0.2 : 0.055);
+        const glowPulse = reducedMotion ? 0 : Math.sin(time * 2.1 + card.userData.phase) * 0.5 + 0.5;
+        card.userData.aura.opacity = focused ? 0.16 + glowPulse * 0.13 : 0.035;
       });
-      stars.rotation.y = Math.sin(time * 0.035) * 0.018;
+      stars.rotation.y = reducedMotion ? 0 : Math.sin(time * 0.035) * 0.018;
+      const motionTime = reducedMotion ? 0 : time;
+      const moteAttribute = moteGeometry.getAttribute("position");
+      motes.forEach((mote, index) => {
+        const offset = index * 3;
+        moteAttribute.array[offset] = mote.x + Math.sin(motionTime * 0.24 + mote.phase) * 0.22;
+        moteAttribute.array[offset + 1] = ((mote.y + motionTime * mote.speed + 5.5) % 11) - 5.5;
+      });
+      moteAttribute.needsUpdate = true;
+      moteField.material.opacity = reducedMotion ? 0.52 : 0.48 + (Math.sin(time * 0.65) * 0.5 + 0.5) * 0.2;
       neonDecor.rotation.z = reducedMotion ? 0 : Math.sin(time * 0.08) * 0.012;
       neonArcs.forEach((arc) => {
         const pulse = reducedMotion ? 0 : Math.sin(time * 0.7 + arc.phase) * 0.5 + 0.5;
+        arc.outer.opacity = 0.025 + pulse * 0.035;
         arc.halo.opacity = 0.11 + pulse * 0.1;
         arc.core.opacity = 0.44 + pulse * 0.34;
       });
       neonRunners.forEach((runner) => {
         const progress = (time * runner.speed + runner.phase) % 1;
-        runner.bead.position.copy(runner.curve.getPointAt(progress));
+        const position = runner.curve.getPointAt(progress);
+        runner.bead.position.copy(position);
+        runner.glow.position.copy(position);
+        runner.glow.scale.setScalar(0.88 + (reducedMotion ? 0 : Math.sin(time * 2.4 + runner.phase) * 0.12));
       });
       controls.update();
       renderer.render(scene, camera);
