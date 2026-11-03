@@ -65,6 +65,17 @@ function PhotoOrbit({ selected, onSelect }) {
     controls.minPolarAngle = Math.PI * 0.36;
     controls.maxPolarAngle = Math.PI * 0.64;
 
+    let wheelDelta = 0;
+    const onWheel = (event) => {
+      wheelDelta += event.deltaY;
+      if (Math.abs(wheelDelta) < 72) return;
+      const steps = Math.min(4, Math.floor(Math.abs(wheelDelta) / 72));
+      const direction = Math.sign(wheelDelta);
+      wheelDelta -= direction * steps * 72;
+      onSelectRef.current((selectedRef.current + direction * steps + memories.length) % memories.length);
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+
     scene.add(new THREE.AmbientLight(0xffffff, 1.1));
     const roseLight = new THREE.PointLight(0xd97f94, 24, 22);
     roseLight.position.set(-4, 3, 5);
@@ -86,6 +97,59 @@ function PhotoOrbit({ selected, onSelect }) {
       new THREE.PointsMaterial({ color: 0xe8c5ca, size: 0.035, transparent: true, opacity: 0.7 }),
     );
     scene.add(stars);
+
+    const flashLight = new THREE.PointLight(0xf45aff, 0, 9);
+    scene.add(flashLight);
+    const lightningBolts = [];
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const makeBolt = (time) => {
+      const side = Math.random() < 0.5 ? -1 : 1;
+      let x = side * (2.75 + Math.random() * 1.15);
+      let y = 2.65 + Math.random() * 0.45;
+      const z = 1.65 + Math.random() * 0.9;
+      const points = [new THREE.Vector3(x, y, z)];
+      for (let i = 0; i < 8; i += 1) {
+        x += (Math.random() - 0.5) * 0.62;
+        y -= 0.55 + Math.random() * 0.13;
+        points.push(new THREE.Vector3(x, y, z + (Math.random() - 0.5) * 0.22));
+      }
+      const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.12);
+      const group = new THREE.Group();
+      const materials = [];
+      const geometries = [];
+      const addTube = (path, color, radius, opacity) => {
+        const tubeCurve = new THREE.CatmullRomCurve3(path, false, "catmullrom", 0.08);
+        const geometry = new THREE.TubeGeometry(tubeCurve, 24, radius, 5, false);
+        const material = new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        group.add(new THREE.Mesh(geometry, material));
+        geometries.push(geometry);
+        materials.push(material);
+      };
+
+      addTube(curve.getPoints(12), 0xc545ff, 0.065, 0.5);
+      addTube(curve.getPoints(12), 0xffd7ff, 0.015, 0.98);
+      [3, 5].forEach((at, branchIndex) => {
+        const origin = points[at];
+        const branch = [
+          origin,
+          new THREE.Vector3(origin.x + side * (0.28 + branchIndex * 0.08), origin.y - 0.24, z + 0.02),
+          new THREE.Vector3(origin.x + side * (0.72 + branchIndex * 0.13), origin.y - 0.53, z - 0.02),
+        ];
+        addTube(branch, 0x51d9ff, 0.034, 0.7);
+        addTube(branch, 0xe8fcff, 0.009, 0.96);
+      });
+
+      scene.add(group);
+      flashLight.position.copy(points[2]);
+      lightningBolts.push({ group, materials, geometries, started: time, duration: 0.5 + Math.random() * 0.28 });
+    };
 
     const cards = [];
     const loader = new THREE.TextureLoader();
@@ -176,6 +240,7 @@ function PhotoOrbit({ selected, onSelect }) {
 
     const clock = new THREE.Clock();
     let frameId;
+    let nextBoltAt = 0.8;
     const animate = () => {
       frameId = window.requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
@@ -198,6 +263,30 @@ function PhotoOrbit({ selected, onSelect }) {
         card.scale.y += (scale - card.scale.y) * 0.055;
       });
       stars.rotation.y = Math.sin(time * 0.035) * 0.018;
+      if (!reducedMotion && time >= nextBoltAt) {
+        makeBolt(time);
+        if (Math.random() > 0.52) makeBolt(time + 0.035);
+        nextBoltAt = time + 1.8 + Math.random() * 1.8;
+      }
+      let flash = 0;
+      for (let i = lightningBolts.length - 1; i >= 0; i -= 1) {
+        const bolt = lightningBolts[i];
+        const age = time - bolt.started;
+        const flicker = age < 0.055 ? 1 : age < 0.095 ? 0.12 : age < 0.17 ? 0.82 : 0.22;
+        const fade = Math.max(0, 1 - age / bolt.duration);
+        const pulse = flicker * fade;
+        bolt.materials.forEach((material, index) => {
+          material.opacity = pulse * (index % 2 ? 0.92 : 0.42);
+        });
+        flash = Math.max(flash, pulse);
+        if (age > bolt.duration) {
+          scene.remove(bolt.group);
+          bolt.geometries.forEach((geometry) => geometry.dispose());
+          bolt.materials.forEach((material) => material.dispose());
+          lightningBolts.splice(i, 1);
+        }
+      }
+      flashLight.intensity = flash * 24;
       controls.update();
       renderer.render(scene, camera);
     };
@@ -207,6 +296,7 @@ function PhotoOrbit({ selected, onSelect }) {
       disposed = true;
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("wheel", onWheel);
       renderer.domElement.removeEventListener("pointerdown", down);
       renderer.domElement.removeEventListener("pointerup", up);
       controls.dispose();
@@ -363,7 +453,7 @@ function Dreamscape() {
       </nav>
 
       <footer className="dreamscape-footer">
-        <span className="footer-hint">drag to wander <i>·</i> choose a photograph to bring it close</span>
+        <span className="footer-hint">scroll or drag to rotate <i>·</i> choose a photograph to bring it close</span>
         <span className="footer-mark">made with care <b>♡</b></span>
       </footer>
     </main>
