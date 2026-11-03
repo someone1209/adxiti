@@ -57,6 +57,16 @@ button, a { font: inherit; }
   justify-content: space-between;
 }
 .dreamscape-header { top: clamp(1.25rem,4vh,2.75rem); }
+.dreamscape-header:after {
+  position: absolute;
+  right: 0;
+  bottom: -1rem;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(234,190,187,.28), transparent 72%);
+  content: "";
+  pointer-events: none;
+}
 .dreamscape-brand {
   display: inline-flex;
   align-items: center;
@@ -74,6 +84,8 @@ button, a { font: inherit; }
   place-items: center;
   border: 1px solid rgba(235,190,183,.65);
   border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(239,190,184,.15), transparent 70%);
+  box-shadow: 0 0 25px rgba(222,139,157,.13), inset 0 0 12px rgba(239,190,184,.08);
   color: #f0c4bd;
   font: italic 1.2rem "Playfair Display", Georgia, serif;
   letter-spacing: 0;
@@ -118,6 +130,14 @@ button, a { font: inherit; }
   transform: translateY(-45%);
   pointer-events: none;
 }
+.dreamscape-copy:before {
+  position: absolute;
+  z-index: -1;
+  inset: -4rem -5rem;
+  background: radial-gradient(ellipse at 35% 52%, rgba(10,7,10,.42), transparent 72%);
+  content: "";
+  pointer-events: none;
+}
 .scene-kicker {
   display: flex;
   align-items: center;
@@ -151,106 +171,6 @@ button, a { font: inherit; }
   font-size: .72rem;
   letter-spacing: .08em;
 }
-.open-memory {
-  display: inline-flex;
-  align-items: center;
-  gap: .55rem;
-  margin-top: 1.25rem;
-  padding: .3rem 0;
-  border: 0;
-  border-bottom: 1px solid rgba(231, 173, 177, .52);
-  background: transparent;
-  color: #f0c9c7;
-  cursor: pointer;
-  font-size: .66rem;
-  letter-spacing: .12em;
-  pointer-events: auto;
-  text-transform: uppercase;
-  transition: color 180ms ease, border-color 180ms ease;
-}
-.open-memory:hover { color: #fff5f0; border-color: #fff5f0; }
-.open-memory:focus-visible, .viewer-close:focus-visible, .viewer-arrow:focus-visible {
-  outline: 2px solid #f4bdc7;
-  outline-offset: 4px;
-}
-.memory-viewer {
-  position: fixed;
-  z-index: 10;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: clamp(1.25rem, 4vw, 3rem);
-  background: rgba(8, 5, 9, .93);
-  backdrop-filter: blur(22px) saturate(.78);
-  animation: viewer-fade-in 240ms ease-out both;
-}
-@keyframes viewer-fade-in { from { opacity: 0; } to { opacity: 1; } }
-.viewer-figure {
-  display: grid;
-  max-width: min(76vw, 920px);
-  max-height: 88vh;
-  justify-items: center;
-  margin: 0;
-  text-align: center;
-}
-.viewer-figure img {
-  display: block;
-  max-width: min(72vw, 840px);
-  max-height: 72vh;
-  object-fit: contain;
-  border: 1px solid rgba(244, 195, 197, .45);
-  box-shadow: 0 0 0 10px rgba(91, 37, 57, .14), 0 32px 100px rgba(0, 0, 0, .62), 0 0 48px rgba(206, 85, 137, .2);
-}
-.viewer-figure img.viewer-image-rotated { transform: rotate(-90deg); }
-.viewer-figure figcaption { padding-top: 1.1rem; }
-.viewer-count, .viewer-hint {
-  color: rgba(245, 220, 222, .62);
-  font-size: .58rem;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-}
-.viewer-figure h2 {
-  margin: .35rem 0;
-  color: #fff2ee;
-  font: 500 clamp(1.6rem, 3vw, 2.4rem)/1.1 "Playfair Display", Georgia, serif;
-}
-.viewer-hint { display: inline-block; margin-top: .35rem; letter-spacing: .13em; }
-.viewer-close, .viewer-arrow {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(244, 203, 205, .4);
-  background: rgba(28, 15, 24, .64);
-  color: #fff1ef;
-  cursor: pointer;
-  backdrop-filter: blur(12px);
-  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
-}
-.viewer-close:hover, .viewer-arrow:hover {
-  border-color: #efb1bc;
-  background: rgba(116, 48, 74, .72);
-}
-.viewer-close {
-  top: clamp(1rem, 4vh, 2.5rem);
-  right: clamp(1rem, 4vw, 3.5rem);
-  width: 2.8rem;
-  height: 2.8rem;
-  border-radius: 50%;
-  font-size: 1.65rem;
-  line-height: 1;
-}
-.viewer-arrow {
-  top: 50%;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 50%;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 2rem;
-  transform: translateY(-50%);
-}
-.viewer-arrow:hover { transform: translateY(-50%) scale(1.06); }
-.viewer-previous { left: clamp(1rem, 4vw, 3.5rem); }
-.viewer-next { right: clamp(1rem, 4vw, 3.5rem); }
 .memory-index {
   color: #d9959d;
   font: italic 1.25rem "Playfair Display", Georgia, serif;
@@ -262,7 +182,14 @@ button, a { font: inherit; }
   right: clamp(1.25rem,5.5vw,5.5rem);
   bottom: 5.7rem;
   display: flex;
+  align-items: center;
   gap: .58rem;
+  padding: .34rem .54rem;
+  border: 1px solid rgba(237,203,198,.15);
+  border-radius: 999px;
+  background: rgba(13,9,13,.32);
+  box-shadow: 0 10px 35px rgba(0,0,0,.18);
+  backdrop-filter: blur(12px);
 }
 .memory-dot {
   display: grid;
@@ -296,6 +223,14 @@ button, a { font: inherit; }
   letter-spacing: .12em;
   text-transform: uppercase;
 }
+.dreamscape-footer:before {
+  position: absolute;
+  z-index: -1;
+  inset: -1rem -1.25rem;
+  background: linear-gradient(0deg, rgba(9,6,9,.34), transparent);
+  content: "";
+  pointer-events: none;
+}
 .footer-hint i { margin: 0 .45rem; color: #d4959d; font-style: normal; }
 .footer-mark b { margin-left: .35rem; color: #df9ba3; font-size: .95rem; }
 
@@ -311,21 +246,12 @@ button, a { font: inherit; }
   .dreamscape-copy h1 { font-size: clamp(2.8rem,13vw,4.7rem); }
   .scene-caption { margin: .75rem 0 1rem; font-size: .74rem; line-height: 1.6; }
   .memory-label { font-size: .65rem; }
-  .open-memory { margin-top: .7rem; font-size: .58rem; }
   .header-actions { gap: .8rem; }
   .back-link { display: none; }
   .sound-toggle { min-height: 2.35rem; padding: .55rem .78rem; font-size: .6rem; }
   .memory-picker { right: 50%; bottom: 4.45rem; gap: .32rem; transform: translateX(50%); }
   .dreamscape-footer { bottom: 1.1rem; font-size: .5rem; letter-spacing: .08em; }
   .footer-mark { display: none; }
-  .memory-viewer { padding: 1rem; }
-  .viewer-figure { max-width: 84vw; max-height: 82vh; }
-  .viewer-figure img { max-width: 78vw; max-height: 66vh; }
-  .viewer-arrow { top: auto; bottom: 1.3rem; width: 2.7rem; height: 2.7rem; transform: none; }
-  .viewer-arrow:hover { transform: scale(1.06); }
-  .viewer-previous { left: calc(50% - 3.4rem); }
-  .viewer-next { right: calc(50% - 3.4rem); }
-  .viewer-close { top: 1rem; right: 1rem; }
 }
 @media (max-height: 640px) and (min-width: 761px) {
   .dreamscape-copy h1 { font-size: clamp(3rem,5.5vw,5rem); }

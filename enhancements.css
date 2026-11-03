@@ -21,6 +21,22 @@
 .letter-body.reveal.is-visible .signature strong{clip-path:inset(0 0 0 0)}
 .handwritten-mark:after{content:"";display:block;width:86%;height:5px;margin-top:-2px;border-bottom:1px solid rgba(173,119,123,.58);border-radius:50%;transform:rotate(-2deg)}
 @media(prefers-reduced-motion:reduce){.signature strong{clip-path:none;transition:none}}
+.topbar{background:linear-gradient(180deg,rgba(31,22,26,.28),transparent);border-bottom:1px solid rgba(255,255,255,.1)}
+.brand-mark{box-shadow:0 0 0 4px rgba(255,255,255,.07),0 0 24px rgba(239,195,186,.14)}
+.top-link{transition:color .25s,border-color .25s}
+.top-link:hover{color:#f3d1ca;border-color:#f3d1ca}
+.button{position:relative;border:1px solid rgba(255,255,255,.16);transition:transform .25s,background .25s,color .25s,box-shadow .25s}
+.button-light{box-shadow:0 12px 32px rgba(25,15,18,.16)}
+.button-light:hover{background:#fff;color:#382a2e;box-shadow:0 16px 40px rgba(25,15,18,.24)}
+.button-dark:hover{background:#4a363c;box-shadow:0 12px 30px rgba(57,44,47,.16)}
+.notebook-spread{filter:drop-shadow(0 30px 34px rgba(67,49,46,.16))}
+.notebook-page{box-shadow:inset 0 0 36px rgba(187,154,130,.07)}
+.wish-card{border-radius:3px;background:linear-gradient(145deg,rgba(255,252,249,.9),rgba(255,248,245,.56));box-shadow:0 9px 25px rgba(76,53,54,.035)}
+.gallery-card{border:1px solid rgba(255,250,246,.65);border-radius:3px;box-shadow:0 8px 22px rgba(52,36,39,.1)}
+.gallery-card:focus-visible{outline:2px solid #bd8587;outline-offset:5px}
+.closing-content{padding:clamp(28px,5vw,54px);border:1px solid rgba(255,255,255,.46);background:rgba(255,250,247,.2);backdrop-filter:blur(3px)}
+.footer{border-top:1px solid rgba(255,255,255,.1)}
+@media(max-width:620px){.topbar{background:linear-gradient(180deg,rgba(31,22,26,.36),transparent);border-bottom:0}.closing-content{padding:0;border:0;background:transparent;backdrop-filter:none}}
 .notebook-spread{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;max-width:1180px;margin:48px auto 0;perspective:1800px;filter:drop-shadow(0 28px 30px rgba(67,49,46,.12))}
 .notebook-page{position:relative;min-width:0;min-height:650px;padding:76px 58px 72px 82px;background-color:#fffdf7;background-image:linear-gradient(to right,transparent 0 61px,rgba(203,127,127,.34) 61px 62px,transparent 62px),repeating-linear-gradient(to bottom,#fffdf7 0 39px,#d9e5eb 39px 40px);background-position:0 0,0 72px;background-size:100% 100%,100% 40px;border:1px solid #e7ded2;overflow:hidden}
 .notebook-page-left{border-radius:5px 0 0 5px;border-right:0;transform-origin:right center;animation:notebook-open-left .9s cubic-bezier(.2,.7,.2,1) both}
