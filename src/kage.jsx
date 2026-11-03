@@ -27,8 +27,18 @@ function PhotoOrbit({ selected, onSelect }) {
   const mountRef = useRef(null);
   const selectedRef = useRef(selected);
   const onSelectRef = useRef(onSelect);
+  const previousSelectionRef = useRef(selected);
+  const transitionRef = useRef(null);
 
   useEffect(() => {
+    if (previousSelectionRef.current !== selected) {
+      transitionRef.current = {
+        from: previousSelectionRef.current,
+        to: selected,
+        started: null,
+      };
+      previousSelectionRef.current = selected;
+    }
     selectedRef.current = selected;
     onSelectRef.current = onSelect;
   }, [selected, onSelect]);
@@ -60,19 +70,23 @@ function PhotoOrbit({ selected, onSelect }) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.enablePan = false;
+    controls.enableZoom = false;
     controls.minDistance = 7.5;
     controls.maxDistance = 14;
     controls.minPolarAngle = Math.PI * 0.36;
     controls.maxPolarAngle = Math.PI * 0.64;
 
     let wheelDelta = 0;
+    let lastWheelAt = 0;
     const onWheel = (event) => {
       wheelDelta += event.deltaY;
-      if (Math.abs(wheelDelta) < 72) return;
-      const steps = Math.min(4, Math.floor(Math.abs(wheelDelta) / 72));
-      const direction = Math.sign(wheelDelta);
-      wheelDelta -= direction * steps * 72;
-      onSelectRef.current((selectedRef.current + direction * steps + memories.length) % memories.length);
+      const now = performance.now();
+      if (Math.abs(wheelDelta) < 72 || now - lastWheelAt < 360) return;
+      wheelDelta = 0;
+      lastWheelAt = now;
+      const current = selectedRef.current;
+      const choices = memories.map((_, index) => index).filter((index) => index !== current);
+      onSelectRef.current(choices[Math.floor(Math.random() * choices.length)]);
     };
     window.addEventListener("wheel", onWheel, { passive: true });
 
@@ -98,58 +112,44 @@ function PhotoOrbit({ selected, onSelect }) {
     );
     scene.add(stars);
 
-    const flashLight = new THREE.PointLight(0xf45aff, 0, 9);
-    scene.add(flashLight);
-    const lightningBolts = [];
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const makeBolt = (time) => {
-      const side = Math.random() < 0.5 ? -1 : 1;
-      let x = side * (2.75 + Math.random() * 1.15);
-      let y = 2.65 + Math.random() * 0.45;
-      const z = 1.65 + Math.random() * 0.9;
-      const points = [new THREE.Vector3(x, y, z)];
-      for (let i = 0; i < 8; i += 1) {
-        x += (Math.random() - 0.5) * 0.62;
-        y -= 0.55 + Math.random() * 0.13;
-        points.push(new THREE.Vector3(x, y, z + (Math.random() - 0.5) * 0.22));
+    const neonDecor = new THREE.Group();
+    scene.add(neonDecor);
+    const neonArcs = [];
+    const neonRunners = [];
+    const addNeonArc = ({ start, end, radiusX, radiusY, depth, color, phase, speed }) => {
+      const points = [];
+      for (let i = 0; i <= 72; i += 1) {
+        const angle = start + ((end - start) * i) / 72;
+        points.push(new THREE.Vector3(
+          Math.cos(angle) * radiusX,
+          Math.sin(angle) * radiusY,
+          depth + Math.sin(angle * 2) * 0.18,
+        ));
       }
-      const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.12);
-      const group = new THREE.Group();
-      const materials = [];
-      const geometries = [];
-      const addTube = (path, color, radius, opacity) => {
-        const tubeCurve = new THREE.CatmullRomCurve3(path, false, "catmullrom", 0.08);
-        const geometry = new THREE.TubeGeometry(tubeCurve, 24, radius, 5, false);
-        const material = new THREE.MeshBasicMaterial({
-          color,
-          transparent: true,
-          opacity,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        });
-        group.add(new THREE.Mesh(geometry, material));
-        geometries.push(geometry);
-        materials.push(material);
-      };
+      const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
+      const halo = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 108, 0.052, 5, false),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.17, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      const core = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 108, 0.012, 5, false),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.62, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      neonDecor.add(halo, core);
+      neonArcs.push({ halo: halo.material, core: core.material, phase });
 
-      addTube(curve.getPoints(12), 0xc545ff, 0.065, 0.5);
-      addTube(curve.getPoints(12), 0xffd7ff, 0.015, 0.98);
-      [3, 5].forEach((at, branchIndex) => {
-        const origin = points[at];
-        const branch = [
-          origin,
-          new THREE.Vector3(origin.x + side * (0.28 + branchIndex * 0.08), origin.y - 0.24, z + 0.02),
-          new THREE.Vector3(origin.x + side * (0.72 + branchIndex * 0.13), origin.y - 0.53, z - 0.02),
-        ];
-        addTube(branch, 0x51d9ff, 0.034, 0.7);
-        addTube(branch, 0xe8fcff, 0.009, 0.96);
-      });
-
-      scene.add(group);
-      flashLight.position.copy(points[2]);
-      lightningBolts.push({ group, materials, geometries, started: time, duration: 0.5 + Math.random() * 0.28 });
+      const bead = new THREE.Mesh(
+        new THREE.SphereGeometry(0.055, 10, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffd7fa, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }),
+      );
+      scene.add(bead);
+      neonRunners.push({ bead, curve, phase, speed });
     };
+
+    addNeonArc({ start: 0.18, end: Math.PI * 1.45, radiusX: 4.75, radiusY: 3.18, depth: -1.12, color: 0xe64cff, phase: 0.2, speed: 0.035 });
+    addNeonArc({ start: Math.PI * 1.16, end: Math.PI * 2.08, radiusX: 4.48, radiusY: 2.94, depth: -0.94, color: 0x63dcff, phase: 1.9, speed: 0.047 });
+    addNeonArc({ start: Math.PI * 0.03, end: Math.PI * 0.72, radiusX: 4.22, radiusY: 2.7, depth: -0.75, color: 0xff8cbd, phase: 3.6, speed: 0.04 });
 
     const cards = [];
     const loader = new THREE.TextureLoader();
@@ -240,53 +240,80 @@ function PhotoOrbit({ selected, onSelect }) {
 
     const clock = new THREE.Clock();
     let frameId;
-    let nextBoltAt = 0.8;
     const animate = () => {
       frameId = window.requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
+      const transition = transitionRef.current;
+      if (transition && transition.started === null) transition.started = time;
+      const transitionProgress = transition
+        ? Math.min(1, Math.max(0, (time - transition.started) / 1.12))
+        : 1;
+      if (transition && transitionProgress >= 1) transitionRef.current = null;
+
       cards.forEach((card) => {
         const index = card.userData.index;
         const delta = (index - selectedRef.current + memories.length) % memories.length;
         const angle = (delta / memories.length) * Math.PI * 2;
         const focused = index === selectedRef.current;
-        const x = focused ? 0 : Math.sin(angle) * 4.05;
-        const y = focused ? 0 : Math.sin(angle * 2) * 0.72;
-        const z = focused ? 1.9 : -0.35 + Math.cos(angle) * 1.25;
+        let x = focused ? 0 : Math.sin(angle) * 4.05;
+        let y = focused ? 0 : Math.sin(angle * 2) * 0.72;
+        let z = focused ? 1.9 : -0.35 + Math.cos(angle) * 1.25;
         const float = Math.sin(time * 0.55 + card.userData.phase) * (focused ? 0.045 : 0.1);
-        const scale = focused ? 1.15 : 0.77;
-        card.position.x += (x - card.position.x) * 0.055;
-        card.position.y += (y + float - card.position.y) * 0.055;
-        card.position.z += (z - card.position.z) * 0.055;
-        card.rotation.y += ((focused ? 0 : -Math.sin(angle) * 0.17) - card.rotation.y) * 0.055;
-        card.rotation.x += ((focused ? 0 : Math.cos(angle) * 0.035) - card.rotation.x) * 0.055;
-        card.scale.x += (scale - card.scale.x) * 0.055;
-        card.scale.y += (scale - card.scale.y) * 0.055;
+        let scale = focused ? 1.15 : 0.77;
+        let rotationY = focused ? 0 : -Math.sin(angle) * 0.17;
+        let rotationX = focused ? 0 : Math.cos(angle) * 0.035;
+
+        if (transition && transition.started !== null && transitionProgress < 1) {
+          const eased = transitionProgress * transitionProgress * (3 - 2 * transitionProgress);
+          if (index === transition.to) {
+            const startDelta = (index - transition.from + memories.length) % memories.length;
+            const startAngle = (startDelta / memories.length) * Math.PI * 2;
+            const startX = Math.sin(startAngle) * 4.05;
+            const startY = Math.sin(startAngle * 2) * 0.72;
+            const startZ = -0.35 + Math.cos(startAngle) * 1.25;
+            const punchIn = Math.min(1, transitionProgress / 0.58);
+            const zoomEase = punchIn * punchIn * (3 - 2 * punchIn);
+            const settleIn = Math.max(0, (transitionProgress - 0.58) / 0.42);
+            const settleEase = settleIn * settleIn * (3 - 2 * settleIn);
+            if (transitionProgress < 0.58) {
+              x = startX * (1 - zoomEase);
+              y = startY * (1 - zoomEase);
+              z = startZ + (3.75 - startZ) * zoomEase;
+              scale = 0.77 + (2.02 - 0.77) * zoomEase;
+            } else {
+              z = 3.75 + (1.9 - 3.75) * settleEase;
+              scale = 2.02 + (1.15 - 2.02) * settleEase;
+            }
+            rotationX *= 1 - zoomEase;
+            rotationY *= 1 - zoomEase;
+          } else if (index === transition.from) {
+            x = -4.3 * eased;
+            y = -0.24 * eased;
+            z = 1.9 - 3.55 * eased;
+            scale = 1.15 - 0.5 * eased;
+            rotationY = -0.2 * eased;
+          }
+        }
+
+        card.position.x += (x - card.position.x) * (transition ? 0.2 : 0.055);
+        card.position.y += (y + float - card.position.y) * (transition ? 0.2 : 0.055);
+        card.position.z += (z - card.position.z) * (transition ? 0.2 : 0.055);
+        card.rotation.y += (rotationY - card.rotation.y) * 0.075;
+        card.rotation.x += (rotationX - card.rotation.x) * 0.075;
+        card.scale.x += (scale - card.scale.x) * (transition ? 0.2 : 0.055);
+        card.scale.y += (scale - card.scale.y) * (transition ? 0.2 : 0.055);
       });
       stars.rotation.y = Math.sin(time * 0.035) * 0.018;
-      if (!reducedMotion && time >= nextBoltAt) {
-        makeBolt(time);
-        if (Math.random() > 0.52) makeBolt(time + 0.035);
-        nextBoltAt = time + 1.8 + Math.random() * 1.8;
-      }
-      let flash = 0;
-      for (let i = lightningBolts.length - 1; i >= 0; i -= 1) {
-        const bolt = lightningBolts[i];
-        const age = time - bolt.started;
-        const flicker = age < 0.055 ? 1 : age < 0.095 ? 0.12 : age < 0.17 ? 0.82 : 0.22;
-        const fade = Math.max(0, 1 - age / bolt.duration);
-        const pulse = flicker * fade;
-        bolt.materials.forEach((material, index) => {
-          material.opacity = pulse * (index % 2 ? 0.92 : 0.42);
-        });
-        flash = Math.max(flash, pulse);
-        if (age > bolt.duration) {
-          scene.remove(bolt.group);
-          bolt.geometries.forEach((geometry) => geometry.dispose());
-          bolt.materials.forEach((material) => material.dispose());
-          lightningBolts.splice(i, 1);
-        }
-      }
-      flashLight.intensity = flash * 24;
+      neonDecor.rotation.z = reducedMotion ? 0 : Math.sin(time * 0.08) * 0.012;
+      neonArcs.forEach((arc) => {
+        const pulse = reducedMotion ? 0 : Math.sin(time * 0.7 + arc.phase) * 0.5 + 0.5;
+        arc.halo.opacity = 0.11 + pulse * 0.1;
+        arc.core.opacity = 0.44 + pulse * 0.34;
+      });
+      neonRunners.forEach((runner) => {
+        const progress = (time * runner.speed + runner.phase) % 1;
+        runner.bead.position.copy(runner.curve.getPointAt(progress));
+      });
       controls.update();
       renderer.render(scene, camera);
     };
@@ -453,7 +480,7 @@ function Dreamscape() {
       </nav>
 
       <footer className="dreamscape-footer">
-        <span className="footer-hint">scroll or drag to rotate <i>·</i> choose a photograph to bring it close</span>
+        <span className="footer-hint">scroll for a random zoom <i>·</i> drag to wander</span>
         <span className="footer-mark">made with care <b>♡</b></span>
       </footer>
     </main>
