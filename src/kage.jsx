@@ -14,7 +14,7 @@ import photo8 from "../images/photo8.jpg";
 
 const memories = [
   { src: photo1, title: "A little hello" },
-  { src: photo2, title: "A playful moment", rotate: true },
+  { src: photo2, title: "A playful moment", rotate: true, rotation: Math.PI / 2 },
   { src: photo3, title: "In your colors" },
   { src: photo4, title: "Framed with love" },
   { src: photo5, title: "Sunday glow" },
