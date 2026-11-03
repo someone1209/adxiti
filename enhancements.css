@@ -161,3 +161,21 @@ body {
   background: #0b080b;
   color: rgba(247, 230, 230, .66);
 }
+
+/* Blend the hero artwork into the plum page below without softening the text or photo frame. */
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 -1px;
+  height: clamp(150px, 22vw, 260px);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(16, 11, 16, 0) 0%,
+    rgba(16, 11, 16, .12) 34%,
+    rgba(16, 11, 16, .62) 72%,
+    #100b10 100%
+  );
+}
+.hero-caption { z-index: 2; }
