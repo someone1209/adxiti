@@ -14,13 +14,13 @@ import photo8 from "../images/photo8.jpg";
 
 const memories = [
   { src: photo1, title: "A little hello" },
-  { src: photo2, title: "A playful moment" },
+  { src: photo2, title: "A playful moment", rotate: true },
   { src: photo3, title: "In your colors" },
   { src: photo4, title: "Framed with love" },
   { src: photo5, title: "Sunday glow" },
   { src: photo6, title: "That bright smile" },
   { src: photo7, title: "A favorite laugh" },
-  { src: photo8, title: "A soft little pause" },
+  { src: photo8, title: "A soft little pause", rotate: true },
 ];
 
 function PhotoOrbit({ selected, onSelect }) {
@@ -168,12 +168,14 @@ function PhotoOrbit({ selected, onSelect }) {
 
       textures.forEach((texture, index) => {
         if (!texture) return;
-        const aspect = texture.image.naturalWidth / texture.image.naturalHeight || 0.7;
+        const sourceAspect = texture.image.naturalWidth / texture.image.naturalHeight || 0.7;
+        const aspect = memory.rotate ? 1 / sourceAspect : sourceAspect;
         const height = aspect > 1.15 ? 1.7 : 2.25;
         const width = Math.min(1.85, height * aspect);
         const card = new THREE.Group();
         card.userData.index = index;
         card.userData.phase = Math.random() * Math.PI * 2;
+        if (memory.rotate) card.rotation.z = -Math.PI / 2;
 
         const frame = new THREE.Mesh(
           new THREE.PlaneGeometry(width + 0.16, height + 0.28),
@@ -410,7 +412,10 @@ function createAmbientAudio() {
 function Dreamscape() {
   const [selected, setSelected] = useState(5);
   const [musicOn, setMusicOn] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const audioRef = useRef(null);
+  const openViewerRef = useRef(null);
+  const closeViewerRef = useRef(null);
   const current = memories[selected];
 
   useEffect(() => () => {
@@ -422,6 +427,24 @@ function Dreamscape() {
     });
     audio.context.close();
   }, []);
+
+  useEffect(() => {
+    if (!viewerOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeViewerRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setViewerOpen(false);
+      if (event.key === "ArrowRight") setSelected((index) => (index + 1) % memories.length);
+      if (event.key === "ArrowLeft") setSelected((index) => (index - 1 + memories.length) % memories.length);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      openViewerRef.current?.focus();
+    };
+  }, [viewerOpen]);
 
   const toggleMusic = async () => {
     if (!audioRef.current) audioRef.current = createAmbientAudio();
@@ -465,6 +488,9 @@ function Dreamscape() {
           <span className="memory-rule" />
           <span>{current.title}</span>
         </div>
+        <button className="open-memory" ref={openViewerRef} onClick={() => setViewerOpen(true)}>
+          Open this photo <span aria-hidden="true">↗</span>
+        </button>
       </section>
 
       <nav className="memory-picker" aria-label="Choose a photograph">
@@ -483,6 +509,28 @@ function Dreamscape() {
         <span className="footer-hint">scroll for a random zoom <i>·</i> drag to wander</span>
         <span className="footer-mark">made with care <b>♡</b></span>
       </footer>
+
+      {viewerOpen && (
+        <div
+          className="memory-viewer"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="viewer-title"
+          onClick={(event) => { if (event.target === event.currentTarget) setViewerOpen(false); }}
+        >
+          <button className="viewer-close" ref={closeViewerRef} onClick={() => setViewerOpen(false)} aria-label="Close photo viewer">×</button>
+          <button className="viewer-arrow viewer-previous" onClick={() => setSelected((index) => (index - 1 + memories.length) % memories.length)} aria-label="Previous photo">‹</button>
+          <figure className="viewer-figure">
+            <img className={current.rotate ? "viewer-image-rotated" : ""} src={current.src} alt={current.title} />
+            <figcaption>
+              <span className="viewer-count">{String(selected + 1).padStart(2, "0")} / {String(memories.length).padStart(2, "0")}</span>
+              <h2 id="viewer-title">{current.title}</h2>
+              <span className="viewer-hint">use ← and → to wander</span>
+            </figcaption>
+          </figure>
+          <button className="viewer-arrow viewer-next" onClick={() => setSelected((index) => (index + 1) % memories.length)} aria-label="Next photo">›</button>
+        </div>
+      )}
     </main>
   );
 }
