@@ -20,7 +20,7 @@ const memories = [
   { src: photo5, title: "Sunday glow" },
   { src: photo6, title: "That bright smile" },
   { src: photo7, title: "A favorite laugh" },
-  { src: photo8, title: "A soft little pause", rotate: true },
+  { src: photo8, title: "A soft little pause", rotate: true, rotation: Math.PI / 2 },
 ];
 
 function PhotoOrbit({ selected, onSelect }) {
@@ -176,7 +176,7 @@ function PhotoOrbit({ selected, onSelect }) {
         const card = new THREE.Group();
         card.userData.index = index;
         card.userData.phase = Math.random() * Math.PI * 2;
-        if (memory.rotate) card.rotation.z = -Math.PI / 2;
+        if (memory.rotate) card.rotation.z = memory.rotation ?? -Math.PI / 2;
 
         const frame = new THREE.Mesh(
           new THREE.PlaneGeometry(width + 0.16, height + 0.28),
