@@ -67,3 +67,19 @@
 @media(max-width:850px){.notebook-spread{grid-template-columns:1fr;gap:16px;max-width:680px}.notebook-page{min-height:0;padding:58px 48px 66px 75px;border:1px solid #e7ded2;border-radius:5px;box-shadow:0 10px 25px rgba(67,49,46,.07)}.notebook-page-left{animation:notebook-open-left .8s cubic-bezier(.2,.7,.2,1) both}.notebook-page-right{animation:notebook-open-right .8s .1s cubic-bezier(.2,.7,.2,1) both}.notebook-binding{display:none}.notebook-page .letter-title-block h2{font-size:clamp(42px,8vw,62px)}}
 @media(max-width:620px){.section-pad.letter{padding:82px 6%}.notebook-spread{margin-top:30px;gap:13px}.notebook-page{padding:48px 24px 56px 51px;background-image:linear-gradient(to right,transparent 0 37px,rgba(203,127,127,.34) 37px 38px,transparent 38px),repeating-linear-gradient(to bottom,#fffdf7 0 37px,#d9e5eb 37px 38px);background-position:0 0,0 52px;background-size:100% 100%,100% 38px}.notebook-page .letter-title-block{margin-bottom:25px}.notebook-page .letter-title-block h2{font-size:46px}.notebook-writing{font-size:21px;line-height:1.48}.notebook-writing .letter-lead{font-size:25px}.notebook-writing .letter-soft{font-size:20px}.notebook-writing .try-again{font-size:21px}.notebook-page .signature strong{font-size:27px}.page-number{right:16px;bottom:12px}}
 @media(prefers-reduced-motion:reduce){.notebook-page-left,.notebook-page-right{animation:none}}
+
+/* Keep the notebook warm and familiar; give its surrounding space a darker romantic frame. */
+.letter {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(112, 60, 78, .34), transparent 62%),
+    radial-gradient(ellipse at 8% 88%, rgba(74, 37, 55, .32), transparent 56%),
+    linear-gradient(135deg, #110c11 0%, #1a1018 54%, #100b10 100%);
+}
+.letter > .section-kicker { color: rgba(247, 219, 215, .83); }
+.letter > .section-kicker span { color: #f2b9bf; }
+.notebook-spread {
+  filter: drop-shadow(0 30px 34px rgba(0, 0, 0, .55))
+    drop-shadow(0 0 30px rgba(225, 143, 174, .11));
+}
