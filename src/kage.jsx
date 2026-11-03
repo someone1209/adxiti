@@ -49,13 +49,25 @@ function PhotoOrbit({ selected, onSelect }) {
 
     let renderer;
     try {
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
+      const deviceMemory = Number(navigator.deviceMemory || 0);
+      const lowPowerDevice = Boolean(connection?.saveData)
+        || (hardwareConcurrency > 0 && hardwareConcurrency <= 4)
+        || (deviceMemory > 0 && deviceMemory <= 4);
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !lowPowerDevice });
+      renderer.userDataLowPower = lowPowerDevice;
     } catch {
       mount.dataset.error = "true";
       return undefined;
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    const renderPixelRatio = () => {
+      const smallScreen = window.matchMedia("(max-width: 760px)").matches;
+      const cap = renderer.userDataLowPower ? 1 : smallScreen ? 1.25 : 1.6;
+      return Math.min(window.devicePixelRatio || 1, cap);
+    };
+    renderer.setPixelRatio(renderPixelRatio());
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.domElement.className = "orbit-canvas";
@@ -142,7 +154,10 @@ function PhotoOrbit({ selected, onSelect }) {
     );
     scene.add(moteField);
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reducedMotion = motionQuery.matches;
+    const updateMotionPreference = (event) => { reducedMotion = event.matches; };
+    motionQuery.addEventListener?.("change", updateMotionPreference);
     const neonDecor = new THREE.Group();
     scene.add(neonDecor);
     const neonArcs = [];
@@ -288,19 +303,24 @@ function PhotoOrbit({ selected, onSelect }) {
       camera.aspect = width / height;
       camera.fov = window.innerWidth < 600 ? 49 : 42;
       camera.updateProjectionMatrix();
+      renderer.setPixelRatio(renderPixelRatio());
       renderer.setSize(width, height);
     };
     window.addEventListener("resize", resize);
     resize();
 
     const clock = new THREE.Clock();
-    let frameId;
+    let frameId = null;
     const animate = () => {
+      if (document.hidden) {
+        frameId = null;
+        return;
+      }
       frameId = window.requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
       const transition = transitionRef.current;
       if (transition && transition.started === null) transition.started = time;
-      const transitionProgress = transition
+      const transitionProgress = transition && !reducedMotion
         ? Math.min(1, Math.max(0, (time - transition.started) / 1.12))
         : 1;
       if (transition && transitionProgress >= 1) transitionRef.current = null;
@@ -313,7 +333,7 @@ function PhotoOrbit({ selected, onSelect }) {
         let x = focused ? 0 : Math.sin(angle) * 4.05;
         let y = focused ? 0 : Math.sin(angle * 2) * 0.72;
         let z = focused ? 1.9 : -0.35 + Math.cos(angle) * 1.25;
-        const float = Math.sin(time * 0.55 + card.userData.phase) * (focused ? 0.045 : 0.1);
+        const float = reducedMotion ? 0 : Math.sin(time * 0.55 + card.userData.phase) * (focused ? 0.045 : 0.1);
         let scale = focused ? 1.15 : 0.77;
         let rotationY = focused ? 0 : -Math.sin(angle) * 0.17;
         let rotationX = focused ? 0 : Math.cos(angle) * 0.035;
@@ -378,7 +398,7 @@ function PhotoOrbit({ selected, onSelect }) {
         arc.core.opacity = 0.44 + pulse * 0.34;
       });
       neonRunners.forEach((runner) => {
-        const progress = (time * runner.speed + runner.phase) % 1;
+        const progress = reducedMotion ? runner.phase % 1 : (time * runner.speed + runner.phase) % 1;
         const position = runner.curve.getPointAt(progress);
         runner.bead.position.copy(position);
         runner.glow.position.copy(position);
@@ -387,6 +407,16 @@ function PhotoOrbit({ selected, onSelect }) {
       controls.update();
       renderer.render(scene, camera);
     };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (frameId !== null) window.cancelAnimationFrame(frameId);
+        frameId = null;
+      } else if (frameId === null) {
+        animate();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     animate();
 
     return () => {
@@ -394,6 +424,8 @@ function PhotoOrbit({ selected, onSelect }) {
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
       window.removeEventListener("wheel", onWheel);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      motionQuery.removeEventListener?.("change", updateMotionPreference);
       renderer.domElement.removeEventListener("pointerdown", down);
       renderer.domElement.removeEventListener("pointerup", up);
       controls.dispose();
@@ -469,6 +501,12 @@ function createAmbientAudio() {
     envelope.gain.exponentialRampToValueAtTime(0.0001, now + 2.1);
     bell.connect(envelope);
     envelope.connect(filter);
+    bell.onended = () => {
+      const activeIndex = oscillators.indexOf(bell);
+      if (activeIndex !== -1) oscillators.splice(activeIndex, 1);
+      bell.disconnect();
+      envelope.disconnect();
+    };
     bell.start(now);
     bell.stop(now + 2.2);
     oscillators.push(bell);
@@ -508,6 +546,20 @@ function Dreamscape() {
     setMusicOn(next);
   };
 
+  const handlePickerKeyDown = (event) => {
+    const increments = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+    let nextIndex;
+    if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = memories.length - 1;
+    else if (increments[event.key]) {
+      nextIndex = (selected + increments[event.key] + memories.length) % memories.length;
+    } else return;
+
+    event.preventDefault();
+    setSelected(nextIndex);
+    event.currentTarget.querySelector(`[data-memory-index="${nextIndex}"]`)?.focus();
+  };
+
   return (
     <main className="dreamscape-page" id="main-content" tabIndex={-1}>
       <a className="skip-link" href="#memory-picker">Skip to photo controls</a>
@@ -527,22 +579,31 @@ function Dreamscape() {
         </div>
       </header>
 
-      <section className="dreamscape-copy" aria-live="polite">
+      <section className="dreamscape-copy">
         <p className="scene-kicker"><span /> an album in orbit</p>
         <h1>A little <em>universe</em><br />of you.</h1>
         <p className="scene-caption">Eight moments, held close<br />and still glowing.</p>
-        <div className="memory-label">
+        <div className="memory-label" role="status" aria-live="polite" aria-atomic="true">
           <span className="memory-index">{String(selected + 1).padStart(2, "0")}</span>
           <span className="memory-rule" />
           <span>{current.title}</span>
         </div>
       </section>
 
-      <nav className="memory-picker" id="memory-picker" tabIndex={-1} aria-label="Choose a photograph">
+      <nav
+        className="memory-picker"
+        id="memory-picker"
+        tabIndex={-1}
+        aria-label="Choose a photograph"
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"
+        onKeyDown={handlePickerKeyDown}
+      >
         {memories.map((memory, index) => (
           <button
             className={"memory-dot" + (index === selected ? " is-active" : "")}
             key={memory.src}
+            data-memory-index={index}
+            tabIndex={index === selected ? 0 : -1}
             onClick={() => setSelected(index)}
             aria-label={"Show " + memory.title}
             aria-current={index === selected ? "true" : undefined}

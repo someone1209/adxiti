@@ -268,10 +268,10 @@ a:focus-visible, button:focus-visible, .memory-picker:focus-visible {
   .dreamscape-header, .dreamscape-footer { right: 1.15rem; left: 1.15rem; }
   .dreamscape-copy { top: 19%; left: 1.4rem; width: calc(100% - 2.8rem); transform: none; }
   .scene-kicker { margin-bottom: .8rem; font-size: .55rem; }
-  .dreamscape-copy h1 { font-size: clamp(2.2rem,11vw,4.7rem); }
+  .dreamscape-copy h1 { font-size: clamp(2rem,10vw,4.4rem); }
   .scene-caption { margin: .75rem 0 1rem; font-size: .74rem; line-height: 1.6; }
   .memory-label { font-size: .65rem; }
-  .header-actions { gap: .8rem; }
+  .header-actions { position: absolute; top: 0; right: 0; gap: .8rem; }
   .back-link { display: none; }
   .sound-toggle { min-height: 2.35rem; padding: .55rem .78rem; font-size: .6rem; }
   .memory-picker { right: 50%; bottom: 4.45rem; gap: .32rem; transform: translateX(50%); }
