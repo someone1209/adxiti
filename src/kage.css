@@ -1,0 +1,21 @@
+:root,
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: #080a08;
+}
+
+html,
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.shader-frame {
+  width: 100%;
+  min-height: 100vh;
+  background: #080a08;
+}
