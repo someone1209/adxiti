@@ -83,3 +83,81 @@
   filter: drop-shadow(0 30px 34px rgba(0, 0, 0, .55))
     drop-shadow(0 0 30px rgba(225, 143, 174, .11));
 }
+
+/* Carry the letter's plum-and-rose palette through every section below it. */
+body {
+  background: #100b10;
+  color: #f3e7e6;
+}
+.wishes,
+.memories {
+  color: #f3e7e6;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(106, 51, 74, .2), transparent 58%),
+    linear-gradient(180deg, #120d13 0%, #100b10 100%);
+}
+.memories {
+  background:
+    radial-gradient(ellipse at 88% 18%, rgba(94, 45, 66, .17), transparent 54%),
+    linear-gradient(180deg, #100b10 0%, #130d13 100%);
+}
+.wishes .section-kicker,
+.memories .section-kicker { color: rgba(247, 219, 215, .76); }
+.wishes .section-kicker span,
+.memories .section-kicker span { color: #f2b9bf; }
+.wishes .small-caps,
+.memories .small-caps { color: #d6b0b4; }
+.wishes h2,
+.memories h2,
+.closing h2 { color: #f6e9e7; }
+.wishes h2 em,
+.memories h2 em,
+.closing h2 em { color: #e7aab4; }
+.wish-card {
+  color: #f3e7e6;
+  background: linear-gradient(145deg, rgba(55, 34, 48, .92), rgba(30, 19, 29, .92));
+  border-color: rgba(230, 174, 187, .18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
+}
+.wish-card:hover {
+  box-shadow: 0 18px 38px rgba(0, 0, 0, .3), 0 0 26px rgba(207, 121, 151, .1);
+}
+.wish-number { color: rgba(244, 214, 215, .7); }
+.wish-icon,
+.wish-footnote span { color: #e6acb6; }
+.wish-card h3 { color: #f5e6e5; }
+.wish-card p,
+.wish-footnote,
+.memories-head > p,
+.gallery-hint { color: rgba(235, 218, 223, .72); }
+.closing {
+  color: #f3e7e6;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(103, 49, 71, .3), transparent 58%),
+    linear-gradient(180deg, #130d13, #100b10);
+}
+.closing::before { opacity: .16; }
+.closing-glow { background: rgba(207, 129, 159, .16); }
+.closing-content {
+  padding: clamp(28px, 5vw, 54px);
+  border: 1px solid rgba(231, 174, 188, .2);
+  border-radius: 4px;
+  background: rgba(28, 17, 27, .48);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .16);
+  backdrop-filter: blur(5px);
+}
+.closing-heart { color: #e6a7b4; }
+.closing-copy { color: rgba(239, 221, 225, .78); }
+.button-dark {
+  background: #eed2d2;
+  color: #2c1a24;
+}
+.button-dark:hover {
+  background: #e3b7c1;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .28);
+}
+.closing-orbit { border-color: rgba(229, 157, 178, .2); }
+.footer {
+  background: #0b080b;
+  color: rgba(247, 230, 230, .66);
+}
