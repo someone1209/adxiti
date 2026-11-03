@@ -36,7 +36,14 @@
 .gallery-card:focus-visible{outline:2px solid #bd8587;outline-offset:5px}
 .closing-content{padding:clamp(28px,5vw,54px);border:1px solid rgba(255,255,255,.46);background:rgba(255,250,247,.2);backdrop-filter:blur(3px)}
 .footer{border-top:1px solid rgba(255,255,255,.1)}
+.skip-link{position:fixed;z-index:100;top:1rem;left:1rem;padding:.7rem 1rem;background:#fffaf7;color:#392c2f;box-shadow:0 8px 28px rgba(40,25,29,.2);transform:translateY(-160%);transition:transform .2s ease}
+.skip-link:focus{transform:translateY(0)}
+.topbar a:focus-visible,.button:focus-visible,.gallery-card:focus-visible,.lightbox button:focus-visible,.footer a:focus-visible{outline:3px solid #9f5f68;outline-offset:4px}
+#main-content:focus{outline:none}
+.gallery-card:focus-visible{z-index:2}
+.reveal{scroll-margin-block:2rem}
 @media(max-width:620px){.topbar{background:linear-gradient(180deg,rgba(31,22,26,.36),transparent);border-bottom:0}.closing-content{padding:0;border:0;background:transparent;backdrop-filter:none}}
+@media(max-width:620px){.topbar{gap:.65rem}.topbar .brand{flex:0 0 auto;gap:6px}.topbar .top-links{position:absolute;top:4rem;right:6%;left:6%;width:auto;max-width:none;min-width:0;flex:none;justify-content:center}.topbar .top-link{display:block;width:auto;min-width:0;max-width:100%;overflow:visible;font-size:7.5px;letter-spacing:.06em;text-align:center;white-space:nowrap}.topbar .top-link span{display:none}.hero-copy{width:100%}.hero h1{font-size:clamp(35px,9.5vw,55px);max-width:100%}.hero-intro{max-width:min(100%,330px)}.hero-photo-wrap{right:50%;bottom:-26px;width:clamp(132px,40vw,160px);transform:translateX(50%) rotate(4deg)}.hero-photo img{height:clamp(170px,56vw,210px)}}
 .notebook-spread{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;max-width:1180px;margin:48px auto 0;perspective:1800px;filter:drop-shadow(0 28px 30px rgba(67,49,46,.12))}
 .notebook-page{position:relative;min-width:0;min-height:650px;padding:76px 58px 72px 82px;background-color:#fffdf7;background-image:linear-gradient(to right,transparent 0 61px,rgba(203,127,127,.34) 61px 62px,transparent 62px),repeating-linear-gradient(to bottom,#fffdf7 0 39px,#d9e5eb 39px 40px);background-position:0 0,0 72px;background-size:100% 100%,100% 40px;border:1px solid #e7ded2;overflow:hidden}
 .notebook-page-left{border-radius:5px 0 0 5px;border-right:0;transform-origin:right center;animation:notebook-open-left .9s cubic-bezier(.2,.7,.2,1) both}

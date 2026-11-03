@@ -509,7 +509,8 @@ function Dreamscape() {
   };
 
   return (
-    <main className="dreamscape-page">
+    <main className="dreamscape-page" id="main-content" tabIndex={-1}>
+      <a className="skip-link" href="#memory-picker">Skip to photo controls</a>
       <PhotoOrbit selected={selected} onSelect={setSelected} />
       <div className="dreamscape-wash" aria-hidden="true" />
 
@@ -537,7 +538,7 @@ function Dreamscape() {
         </div>
       </section>
 
-      <nav className="memory-picker" aria-label="Choose a photograph">
+      <nav className="memory-picker" id="memory-picker" tabIndex={-1} aria-label="Choose a photograph">
         {memories.map((memory, index) => (
           <button
             className={"memory-dot" + (index === selected ? " is-active" : "")}

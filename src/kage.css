@@ -13,6 +13,25 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 button, a { font: inherit; }
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  top: 1rem;
+  left: 1rem;
+  padding: .7rem 1rem;
+  border: 1px solid rgba(241,211,205,.45);
+  border-radius: 999px;
+  background: #21151c;
+  color: #fff1ef;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 180ms ease;
+}
+.skip-link:focus { transform: translateY(0); }
+a:focus-visible, button:focus-visible, .memory-picker:focus-visible {
+  outline: 2px solid #ffd4d2;
+  outline-offset: 4px;
+}
 
 .dreamscape-page {
   position: relative;
@@ -247,9 +266,9 @@ button, a { font: inherit; }
       linear-gradient(90deg, rgba(11,8,11,.18), transparent 58%);
   }
   .dreamscape-header, .dreamscape-footer { right: 1.15rem; left: 1.15rem; }
-  .dreamscape-copy { top: 19%; left: 1.4rem; width: 80%; transform: none; }
+  .dreamscape-copy { top: 19%; left: 1.4rem; width: calc(100% - 2.8rem); transform: none; }
   .scene-kicker { margin-bottom: .8rem; font-size: .55rem; }
-  .dreamscape-copy h1 { font-size: clamp(2.8rem,13vw,4.7rem); }
+  .dreamscape-copy h1 { font-size: clamp(2.2rem,11vw,4.7rem); }
   .scene-caption { margin: .75rem 0 1rem; font-size: .74rem; line-height: 1.6; }
   .memory-label { font-size: .65rem; }
   .header-actions { gap: .8rem; }
