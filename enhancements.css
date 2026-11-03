@@ -179,3 +179,14 @@ body {
   );
 }
 .hero-caption { z-index: 2; }
+
+/* Let the same page canvas show through each section to avoid hard horizontal seams. */
+.letter,
+.wishes,
+.memories,
+.closing { background: transparent; }
+.closing::before {
+  opacity: .16;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+}
