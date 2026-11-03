@@ -1,21 +1,231 @@
-:root,
-html,
-body,
-#root {
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap");
+
+:root, html, body, #root {
   width: 100%;
   min-height: 100%;
   margin: 0;
-  background: #080a08;
+  background: #0b080b;
 }
-
-html,
+html, body { min-height: 100vh; overflow: hidden; }
 body {
-  min-height: 100vh;
-  overflow-x: hidden;
+  color: #fbf1ef;
+  font-family: "DM Sans", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+button, a { font: inherit; }
 
-.shader-frame {
+.dreamscape-page {
+  position: relative;
   width: 100%;
-  min-height: 100vh;
-  background: #080a08;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 69% 47%, rgba(111,37,61,.35), transparent 38%),
+    radial-gradient(ellipse at 25% 85%, rgba(89,40,43,.2), transparent 42%),
+    #0b080b;
+}
+.orbit-scene, .dreamscape-wash {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.orbit-scene { z-index: -1; }
+.orbit-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.orbit-scene[data-error="true"]::after {
+  content: "This 3D gallery needs WebGL enabled in your browser.";
+  position: absolute;
+  inset: auto 1.5rem 6rem;
+  color: #f4dadd;
+  text-align: center;
+}
+.dreamscape-wash {
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(11,8,11,.94) 0%, rgba(11,8,11,.65) 29%, rgba(11,8,11,.05) 67%, rgba(11,8,11,.16) 100%),
+    linear-gradient(0deg, rgba(11,8,11,.8) 0%, transparent 28%, transparent 75%, rgba(11,8,11,.32) 100%);
+}
+.dreamscape-header, .dreamscape-footer {
+  position: absolute;
+  z-index: 2;
+  right: clamp(1.25rem,5.5vw,5.5rem);
+  left: clamp(1.25rem,5.5vw,5.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dreamscape-header { top: clamp(1.25rem,4vh,2.75rem); }
+.dreamscape-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .72rem;
+  color: rgba(255,245,242,.9);
+  font-size: .69rem;
+  letter-spacing: .2em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.brand-seal {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(235,190,183,.65);
+  border-radius: 50%;
+  color: #f0c4bd;
+  font: italic 1.2rem "Playfair Display", Georgia, serif;
+  letter-spacing: 0;
+}
+.header-actions { display: flex; align-items: center; gap: clamp(1rem,3vw,2.75rem); }
+.back-link {
+  color: rgba(255,243,241,.78);
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+.back-link:hover, .dreamscape-brand:hover { color: #f0bcb8; }
+.sound-toggle {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: .62rem;
+  padding: .65rem 1rem;
+  border: 1px solid rgba(241,211,205,.33);
+  border-radius: 999px;
+  background: rgba(20,12,17,.55);
+  color: #f7e8e5;
+  cursor: pointer;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+  backdrop-filter: blur(12px);
+}
+.sound-toggle:hover, .sound-toggle.is-playing {
+  border-color: rgba(242,186,178,.8);
+  background: rgba(118,47,66,.46);
+  color: #ffe7e1;
+}
+.sound-icon { color: #f0b8b5; font-size: 1rem; }
+.dreamscape-copy {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: clamp(1.5rem,9.5vw,9rem);
+  width: min(29rem,38vw);
+  transform: translateY(-45%);
+  pointer-events: none;
+}
+.scene-kicker {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 0 0 1.5rem;
+  color: #d4a0a4;
+  font-size: .65rem;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+.scene-kicker span { width: 2rem; height: 1px; background: #bd777e; }
+.dreamscape-copy h1 {
+  margin: 0;
+  color: #fff5f0;
+  font: 500 clamp(3.2rem,6.6vw,6.7rem)/.98 "Playfair Display", Georgia, serif;
+  letter-spacing: -.065em;
+  text-shadow: 0 5px 34px rgba(9,5,7,.42);
+}
+.dreamscape-copy h1 em { color: #e5a8ad; font-weight: 500; }
+.scene-caption {
+  margin: 1.4rem 0 2rem;
+  color: rgba(247,229,226,.74);
+  font-size: .86rem;
+  line-height: 1.9;
+}
+.memory-label {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  color: #ead8d4;
+  font-size: .72rem;
+  letter-spacing: .08em;
+}
+.memory-index {
+  color: #d9959d;
+  font: italic 1.25rem "Playfair Display", Georgia, serif;
+}
+.memory-rule { width: 2.3rem; height: 1px; background: rgba(220,168,168,.6); }
+.memory-picker {
+  position: absolute;
+  z-index: 3;
+  right: clamp(1.25rem,5.5vw,5.5rem);
+  bottom: 5.7rem;
+  display: flex;
+  gap: .58rem;
+}
+.memory-dot {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.memory-dot span {
+  width: .35rem;
+  height: .35rem;
+  border: 1px solid rgba(245,218,215,.65);
+  border-radius: 50%;
+  background: rgba(15,10,14,.72);
+  transition: width 180ms ease, height 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+.memory-dot:hover span, .memory-dot.is-active span {
+  width: .7rem;
+  height: .7rem;
+  border-color: #f0bfc0;
+  background: #e6a5ad;
+  box-shadow: 0 0 14px rgba(233,156,168,.75);
+}
+.dreamscape-footer {
+  bottom: 1.55rem;
+  color: rgba(245,226,223,.54);
+  font-size: .62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.footer-hint i { margin: 0 .45rem; color: #d4959d; font-style: normal; }
+.footer-mark b { margin-left: .35rem; color: #df9ba3; font-size: .95rem; }
+
+@media (max-width: 760px) {
+  .dreamscape-wash {
+    background:
+      linear-gradient(180deg, rgba(11,8,11,.66) 0%, rgba(11,8,11,.16) 34%, rgba(11,8,11,.08) 61%, rgba(11,8,11,.8) 100%),
+      linear-gradient(90deg, rgba(11,8,11,.18), transparent 58%);
+  }
+  .dreamscape-header, .dreamscape-footer { right: 1.15rem; left: 1.15rem; }
+  .dreamscape-copy { top: 19%; left: 1.4rem; width: 80%; transform: none; }
+  .scene-kicker { margin-bottom: .8rem; font-size: .55rem; }
+  .dreamscape-copy h1 { font-size: clamp(2.8rem,13vw,4.7rem); }
+  .scene-caption { margin: .75rem 0 1rem; font-size: .74rem; line-height: 1.6; }
+  .memory-label { font-size: .65rem; }
+  .header-actions { gap: .8rem; }
+  .back-link { display: none; }
+  .sound-toggle { min-height: 2.35rem; padding: .55rem .78rem; font-size: .6rem; }
+  .memory-picker { right: 50%; bottom: 4.45rem; gap: .32rem; transform: translateX(50%); }
+  .dreamscape-footer { bottom: 1.1rem; font-size: .5rem; letter-spacing: .08em; }
+  .footer-mark { display: none; }
+}
+@media (max-height: 640px) and (min-width: 761px) {
+  .dreamscape-copy h1 { font-size: clamp(3rem,5.5vw,5rem); }
+  .scene-caption { margin: .9rem 0 1.2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
 }
