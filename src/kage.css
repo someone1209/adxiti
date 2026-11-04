@@ -257,6 +257,7 @@ a:focus-visible, button:focus-visible, .memory-picker:focus-visible {
   pointer-events: none;
 }
 .footer-hint i { margin: 0 .45rem; color: #d4959d; font-style: normal; }
+.footer-hint-mobile { display: none; }
 .footer-mark b { margin-left: .35rem; color: #df9ba3; font-size: .95rem; }
 
 @media (max-width: 760px) {
@@ -266,15 +267,18 @@ a:focus-visible, button:focus-visible, .memory-picker:focus-visible {
       linear-gradient(90deg, rgba(11,8,11,.18), transparent 58%);
   }
   .dreamscape-header, .dreamscape-footer { right: 1.15rem; left: 1.15rem; }
-  .dreamscape-copy { top: 19%; left: 1.4rem; width: calc(100% - 2.8rem); transform: none; }
+  .dreamscape-copy { top: 14%; left: 1.4rem; width: calc(100% - 2.8rem); transform: none; }
   .scene-kicker { margin-bottom: .8rem; font-size: .55rem; }
   .dreamscape-copy h1 { font-size: clamp(2rem,10vw,4.4rem); }
   .scene-caption { margin: .75rem 0 1rem; font-size: .74rem; line-height: 1.6; }
-  .memory-label { font-size: .65rem; }
+  .memory-label { margin-top: .65rem; font-size: .65rem; }
   .header-actions { position: absolute; top: 0; right: 0; gap: .8rem; }
   .back-link { display: none; }
   .sound-toggle { min-height: 2.35rem; padding: .55rem .78rem; font-size: .6rem; }
-  .memory-picker { right: 50%; bottom: 4.45rem; gap: .32rem; transform: translateX(50%); }
+  .memory-picker { right: 50%; bottom: 3.6rem; gap: .2rem; transform: translateX(50%); }
+  .memory-dot { width: 2rem; height: 2rem; }
+  .footer-hint-desktop { display: none; }
+  .footer-hint-mobile { display: inline; }
   .dreamscape-footer { bottom: 1.1rem; font-size: .5rem; letter-spacing: .08em; }
   .footer-mark { display: none; }
 }

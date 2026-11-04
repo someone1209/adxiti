@@ -277,11 +277,22 @@ function PhotoOrbit({ selected, onSelect }) {
     let pointerStart = null;
     const down = (event) => { pointerStart = { x: event.clientX, y: event.clientY }; };
     const up = (event) => {
-      if (!pointerStart || Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 6) {
-        pointerStart = null;
+      if (!pointerStart) return;
+      const deltaX = event.clientX - pointerStart.x;
+      const deltaY = event.clientY - pointerStart.y;
+      pointerStart = null;
+
+      if (window.matchMedia("(max-width: 760px)").matches
+        && Math.abs(deltaX) > 46
+        && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+        const direction = deltaX < 0 ? 1 : -1;
+        onSelectRef.current((selectedRef.current + direction + memories.length) % memories.length);
         return;
       }
-      pointerStart = null;
+
+      if (Math.hypot(deltaX, deltaY) > 6) {
+        return;
+      }
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.set(
         ((event.clientX - rect.left) / rect.width) * 2 - 1,
@@ -319,6 +330,10 @@ function PhotoOrbit({ selected, onSelect }) {
       frameId = window.requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
       const transition = transitionRef.current;
+      const compactLayout = window.matchMedia("(max-width: 760px)").matches;
+      const orbitRadius = compactLayout ? 3.9 : 4.05;
+      const orbitBaseY = compactLayout ? (window.innerHeight <= 700 ? -0.62 : -1.08) : 0;
+      const orbitHeight = compactLayout ? 0.34 : 0.72;
       if (transition && transition.started === null) transition.started = time;
       const transitionProgress = transition && !reducedMotion
         ? Math.min(1, Math.max(0, (time - transition.started) / 1.12))
@@ -330,8 +345,8 @@ function PhotoOrbit({ selected, onSelect }) {
         const delta = (index - selectedRef.current + memories.length) % memories.length;
         const angle = (delta / memories.length) * Math.PI * 2;
         const focused = index === selectedRef.current;
-        let x = focused ? 0 : Math.sin(angle) * 4.05;
-        let y = focused ? 0 : Math.sin(angle * 2) * 0.72;
+        let x = focused ? 0 : Math.sin(angle) * orbitRadius;
+        let y = focused ? orbitBaseY : orbitBaseY + Math.sin(angle * 2) * orbitHeight;
         let z = focused ? 1.9 : -0.35 + Math.cos(angle) * 1.25;
         const float = reducedMotion ? 0 : Math.sin(time * 0.55 + card.userData.phase) * (focused ? 0.045 : 0.1);
         let scale = focused ? 1.15 : 0.77;
@@ -343,8 +358,8 @@ function PhotoOrbit({ selected, onSelect }) {
           if (index === transition.to) {
             const startDelta = (index - transition.from + memories.length) % memories.length;
             const startAngle = (startDelta / memories.length) * Math.PI * 2;
-            const startX = Math.sin(startAngle) * 4.05;
-            const startY = Math.sin(startAngle * 2) * 0.72;
+            const startX = Math.sin(startAngle) * orbitRadius;
+            const startY = orbitBaseY + Math.sin(startAngle * 2) * orbitHeight;
             const startZ = -0.35 + Math.cos(startAngle) * 1.25;
             const punchIn = Math.min(1, transitionProgress / 0.58);
             const zoomEase = punchIn * punchIn * (3 - 2 * punchIn);
@@ -363,7 +378,7 @@ function PhotoOrbit({ selected, onSelect }) {
             rotationY *= 1 - zoomEase;
           } else if (index === transition.from) {
             x = -4.3 * eased;
-            y = -0.24 * eased;
+            y = orbitBaseY - 0.24 * eased;
             z = 1.9 - 3.55 * eased;
             scale = 1.15 - 0.5 * eased;
             rotationY = -0.2 * eased;
@@ -612,7 +627,8 @@ function Dreamscape() {
       </nav>
 
       <footer className="dreamscape-footer">
-        <span className="footer-hint">scroll for a random zoom <i>·</i> drag to wander</span>
+        <span className="footer-hint footer-hint-desktop">scroll for a random zoom <i>·</i> drag to wander</span>
+        <span className="footer-hint footer-hint-mobile">swipe to move <i>·</i> tap a memory to focus</span>
         <span className="footer-mark">made with care <b>♡</b></span>
       </footer>
 
