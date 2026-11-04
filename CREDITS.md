@@ -11,6 +11,7 @@ The site self-hosts these Latin variable WOFF2 files from Fontsource. Each typef
 ## Photos and sound
 
 - The eight images in `images/photo1.jpg` through `images/photo8.jpg` were supplied with this personal project. They remain local project assets and are not sent to a third-party image, AI, or CDN service.
+- The 3D gallery downsamples photo textures to a 1024-pixel maximum edge in a browser canvas at runtime to reduce GPU memory. The original files remain unchanged and no derivative photo files are added to the repository.
 - The ambient score is synthesized in `src/kage.jsx` with the browser Web Audio API. The project uses no downloaded music or sound recording.
 
 ## Original project artwork

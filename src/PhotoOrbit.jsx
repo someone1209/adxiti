@@ -41,13 +41,17 @@ export default function PhotoOrbit({ selected, onSelect }) {
       return undefined;
     }
 
-    const renderPixelRatio = () => {
+    const pixelRatioCap = () => {
       const smallScreen = window.matchMedia("(max-width: 760px)").matches;
-      const cap = renderer.userDataLowPower ? 1 : smallScreen ? 1.25 : 1.6;
-      return Math.min(window.devicePixelRatio || 1, cap);
+      return Math.min(window.devicePixelRatio || 1, renderer.userDataLowPower ? 1 : smallScreen ? 1.25 : 1.6);
     };
-    renderer.setPixelRatio(renderPixelRatio());
-    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    let maxPixelRatio = pixelRatioCap();
+    let activePixelRatio = maxPixelRatio;
+    const applyPixelRatio = () => {
+      renderer.setPixelRatio(activePixelRatio);
+      renderer.setSize(mount.clientWidth, mount.clientHeight);
+    };
+    applyPixelRatio();
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.domElement.className = "orbit-canvas";
     renderer.domElement.setAttribute("aria-label", "Floating 3D gallery of photographs");
@@ -89,8 +93,10 @@ export default function PhotoOrbit({ selected, onSelect }) {
     candleLight.position.set(4, -2, -2);
     scene.add(candleLight);
 
-    const starPositions = new Float32Array(520 * 3);
-    for (let i = 0; i < 520; i += 1) {
+    const compactLayout = window.matchMedia("(max-width: 760px)").matches;
+    const starCount = compactLayout || renderer.userDataLowPower ? 340 : 520;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i += 1) {
       starPositions[i * 3] = (Math.random() - 0.5) * 28;
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 18;
       starPositions[i * 3 + 2] = -5 - Math.random() * 18;
@@ -103,7 +109,7 @@ export default function PhotoOrbit({ selected, onSelect }) {
     );
     scene.add(stars);
 
-    const moteCount = 96;
+    const moteCount = compactLayout || renderer.userDataLowPower ? 60 : 96;
     const motePositions = new Float32Array(moteCount * 3);
     const motes = Array.from({ length: moteCount }, () => ({
       x: (Math.random() - 0.5) * 18,
@@ -186,11 +192,29 @@ export default function PhotoOrbit({ selected, onSelect }) {
     const cards = [];
     const loader = new THREE.TextureLoader();
     let disposed = false;
+    const downsampleTexture = (texture) => {
+      const image = texture.image;
+      const width = image.naturalWidth || image.width;
+      const height = image.naturalHeight || image.height;
+      const maxEdge = Math.max(width, height);
+      if (!maxEdge || maxEdge <= 1024) return texture;
+      const scale = 1024 / maxEdge;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      const context = canvas.getContext("2d");
+      if (!context) return texture;
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const reduced = new THREE.CanvasTexture(canvas);
+      reduced.colorSpace = THREE.SRGBColorSpace;
+      texture.dispose();
+      return reduced;
+    };
 
     Promise.all(memories.map((memory) => new Promise((resolve) => {
       loader.load(memory.src, (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
-        resolve(texture);
+        resolve(downsampleTexture(texture));
       }, undefined, () => resolve(null));
     }))).then((textures) => {
       if (disposed) {
@@ -293,20 +317,54 @@ export default function PhotoOrbit({ selected, onSelect }) {
       camera.aspect = width / height;
       camera.fov = window.innerWidth < 600 ? 49 : 42;
       camera.updateProjectionMatrix();
-      renderer.setPixelRatio(renderPixelRatio());
-      renderer.setSize(width, height);
+      maxPixelRatio = pixelRatioCap();
+      activePixelRatio = Math.min(activePixelRatio, maxPixelRatio);
+      applyPixelRatio();
     };
     window.addEventListener("resize", resize);
     resize();
 
     const clock = new THREE.Clock();
     let frameId = null;
-    const animate = () => {
-      if (document.hidden) {
+    let sceneInView = true;
+    let sampleStartedAt = 0;
+    let sampleFrames = 0;
+    let slowWindows = 0;
+    let fastWindows = 0;
+    const animate = (timestamp) => {
+      if (document.hidden || !sceneInView) {
         frameId = null;
         return;
       }
       frameId = window.requestAnimationFrame(animate);
+      sampleFrames += 1;
+      if (!reducedMotion && sampleStartedAt && timestamp - sampleStartedAt >= 1800) {
+        const fps = (sampleFrames * 1000) / (timestamp - sampleStartedAt);
+        if (fps < 45 && activePixelRatio > 0.75) {
+          slowWindows += 1;
+          fastWindows = 0;
+          if (slowWindows >= 1) {
+            activePixelRatio = Math.max(0.75, activePixelRatio * 0.88);
+            applyPixelRatio();
+            slowWindows = 0;
+          }
+        } else if (fps > 57 && activePixelRatio < maxPixelRatio) {
+          fastWindows += 1;
+          slowWindows = 0;
+          if (fastWindows >= 3) {
+            activePixelRatio = Math.min(maxPixelRatio, activePixelRatio + 0.08);
+            applyPixelRatio();
+            fastWindows = 0;
+          }
+        } else {
+          slowWindows = 0;
+          fastWindows = 0;
+        }
+        sampleStartedAt = timestamp;
+        sampleFrames = 0;
+      } else if (!sampleStartedAt) {
+        sampleStartedAt = timestamp;
+      }
       const time = clock.getElapsedTime();
       const transition = transitionRef.current;
       const compactLayout = window.matchMedia("(max-width: 760px)").matches;
@@ -401,17 +459,31 @@ export default function PhotoOrbit({ selected, onSelect }) {
       controls.update();
       renderer.render(scene, camera);
     };
+    const startAnimation = () => {
+      if (frameId === null && !document.hidden && sceneInView) {
+        frameId = window.requestAnimationFrame(animate);
+      }
+    };
+    const visibilityObserver = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => {
+        sceneInView = entry.isIntersecting;
+        if (sceneInView) startAnimation();
+        else if (frameId !== null) {
+          window.cancelAnimationFrame(frameId);
+          frameId = null;
+        }
+      }, { threshold: 0.01 })
+      : null;
+    visibilityObserver?.observe(mount);
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (frameId !== null) window.cancelAnimationFrame(frameId);
         frameId = null;
-      } else if (frameId === null) {
-        animate();
-      }
+      } else startAnimation();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    animate();
+    startAnimation();
 
     return () => {
       disposed = true;
@@ -419,6 +491,7 @@ export default function PhotoOrbit({ selected, onSelect }) {
       window.removeEventListener("resize", resize);
       window.removeEventListener("wheel", onWheel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      visibilityObserver?.disconnect();
       motionQuery.removeEventListener?.("change", updateMotionPreference);
       renderer.domElement.removeEventListener("pointerdown", down);
       renderer.domElement.removeEventListener("pointerup", up);
