@@ -196,6 +196,18 @@ a:focus-visible, button:focus-visible, .memory-picker:focus-visible {
 }
 .sound-toggle.is-playing { box-shadow: 0 0 26px rgba(231,132,161,.15), inset 0 0 15px rgba(245,190,196,.05); }
 .sound-icon { color: #f0b8b5; font-size: 1rem; }
+.sound-status {
+  position: absolute;
+  z-index: 4;
+  top: 5.3rem;
+  right: clamp(1.25rem,5.5vw,5.5rem);
+  max-width: 22rem;
+  margin: 0;
+  color: #f4dadd;
+  font-size: .68rem;
+  line-height: 1.5;
+  text-align: right;
+}
 .dreamscape-copy {
   position: absolute;
   z-index: 1;
@@ -338,6 +350,7 @@ a:focus-visible, button:focus-visible, .memory-picker:focus-visible {
   .header-actions { position: absolute; top: 0; right: 0; gap: .8rem; }
   .back-link { display: none; }
   .sound-toggle { min-height: 2.35rem; padding: .55rem .78rem; font-size: .6rem; }
+  .sound-status { top: 3.9rem; right: 1.15rem; max-width: 15rem; font-size: .58rem; }
   .memory-picker { right: 50%; bottom: 3.6rem; gap: .2rem; transform: translateX(50%); }
   .memory-dot { width: 2rem; height: 2rem; }
   .footer-hint-desktop { display: none; }

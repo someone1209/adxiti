@@ -4,7 +4,26 @@ import { memories } from "./memories.js";
 const PhotoOrbit = lazy(() => import("./PhotoOrbit.jsx"));
 import "./kage.css";
 
+const MUSIC_PREFERENCE_KEY = "a-little-hope:music-preference";
 
+function readMusicPreference() {
+  try {
+    return window.localStorage.getItem(MUSIC_PREFERENCE_KEY) !== "muted";
+  } catch (error) {
+    console.warn("Could not read the saved sound preference.", error);
+    return true;
+  }
+}
+
+function saveMusicPreference(enabled) {
+  try {
+    window.localStorage.setItem(MUSIC_PREFERENCE_KEY, enabled ? "on" : "muted");
+    return true;
+  } catch (error) {
+    console.error("Could not save the sound preference.", error);
+    return false;
+  }
+}
 
 function createAmbientAudio() {
   const context = new window.AudioContext();
@@ -77,6 +96,8 @@ function createAmbientAudio() {
 function Dreamscape() {
   const [selected, setSelected] = useState(5);
   const [musicOn, setMusicOn] = useState(false);
+  const [musicPreference, setMusicPreference] = useState(readMusicPreference);
+  const [audioNotice, setAudioNotice] = useState("");
   const [entered, setEntered] = useState(false);
   const [entryVisible, setEntryVisible] = useState(true);
   const audioRef = useRef(null);
@@ -100,11 +121,13 @@ function Dreamscape() {
   }, [entered]);
 
   const toggleMusic = async () => {
+    const next = !musicOn;
+    setAudioNotice("");
     try {
-      if (!audioRef.current) audioRef.current = createAmbientAudio();
+      if (!audioRef.current && next) audioRef.current = createAmbientAudio();
       const audio = audioRef.current;
-      await audio.context.resume();
-      const next = !musicOn;
+      if (!audio) return;
+      if (next) await audio.context.resume();
       audio.master.gain.cancelScheduledValues(audio.context.currentTime);
       audio.master.gain.setTargetAtTime(next ? 0.62 : 0, audio.context.currentTime, 0.8);
       if (next && !audio.timer) audio.timer = window.setInterval(audio.playNote, 2600);
@@ -113,14 +136,20 @@ function Dreamscape() {
         audio.timer = null;
       }
       setMusicOn(next);
-    } catch {
+      setMusicPreference(next);
+      if (!saveMusicPreference(next)) {
+        setAudioNotice("Your sound choice could not be saved on this device.");
+      }
+    } catch (error) {
+      console.error("Could not update ambient audio.", error);
       setMusicOn(false);
+      setAudioNotice("Audio could not start in this browser. You can still enjoy the gallery quietly.");
     }
   };
 
   const beginExperience = (withMusic) => {
     setEntered(true);
-    if (withMusic !== musicOn) void toggleMusic();
+    if (withMusic && musicPreference && !musicOn) void toggleMusic();
     entryTimerRef.current = window.setTimeout(() => setEntryVisible(false), 720);
   };
 
@@ -162,6 +191,7 @@ function Dreamscape() {
           </button>
         </div>
       </header>
+      {audioNotice && <p className="sound-status" role="status">{audioNotice}</p>}
 
       {entryVisible && (
         <section className={"entry-screen" + (entered ? " is-leaving" : "")} aria-labelledby="entry-title" aria-hidden={entered} inert={entered}>
@@ -177,7 +207,7 @@ function Dreamscape() {
                 Enter quietly
               </button>
             </div>
-            <p className="entry-note">Music is optional and can be turned off any time.</p>
+            <p className="entry-note">Your sound choice is remembered; music can be changed any time.</p>
           </div>
         </section>
       )}
