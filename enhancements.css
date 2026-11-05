@@ -190,3 +190,11 @@ body {
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
 }
+
+@media (max-width: 620px) {
+  .hero { animation: none; }
+  .hero-copy .eyebrow { animation: soft-rise .45s 0s both; }
+  .hero-copy h1 { animation: soft-rise .5s .04s both; }
+  .hero-intro { animation: soft-rise .5s .09s both; }
+  .hero-copy .button { animation: soft-rise .5s .14s both; }
+}

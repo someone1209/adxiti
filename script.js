@@ -20,6 +20,8 @@ import { registerServiceWorker } from './src/registerServiceWorker.js';
     throw new Error('Memory gallery markup or memory data is missing.');
   }
 
+  featuredImage.srcset = featuredMemory.srcSet;
+  featuredImage.sizes = '(max-width: 620px) 45vw, 25vw';
   featuredImage.src = featuredMemory.src;
   featuredImage.alt = featuredMemory.alt;
   featuredImage.width = featuredMemory.width;
@@ -35,6 +37,8 @@ import { registerServiceWorker } from './src/registerServiceWorker.js';
     card.setAttribute('aria-label', `Open memory: ${memory.title}`);
 
     const image = document.createElement('img');
+    image.srcset = memory.srcSet;
+    image.sizes = '(max-width: 620px) 50vw, 30vw';
     image.src = memory.src;
     image.alt = memory.alt;
     image.width = memory.width;
@@ -62,6 +66,7 @@ import { registerServiceWorker } from './src/registerServiceWorker.js';
 
   function updateProgress() {
     scrollFrame = 0;
+    if (!window.scrollY) return;
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
     const progress = scrollable > 0 ? window.scrollY / scrollable : 0;
     progressBar.style.transform = `scaleX(${Math.min(1, Math.max(0, progress))})`;
@@ -74,7 +79,8 @@ import { registerServiceWorker } from './src/registerServiceWorker.js';
   if (!reduceMotion) {
     const field = document.querySelector('.petal-field');
     const marks = ['♡', '✧', '·', '❀'];
-    for (let index = 0; index < 17; index += 1) {
+    const petalCount = window.matchMedia('(max-width: 620px)').matches ? 7 : 17;
+    for (let index = 0; index < petalCount; index += 1) {
       const petal = document.createElement('span');
       petal.className = 'petal';
       petal.textContent = marks[index % marks.length];

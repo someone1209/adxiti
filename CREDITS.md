@@ -11,12 +11,14 @@ The site self-hosts these Latin variable WOFF2 files from Fontsource. Each typef
 ## Photos and sound
 
 - The eight images in `images/photo1.jpg` through `images/photo8.jpg` were supplied with this personal project. They remain local project assets and are not sent to a third-party image, AI, or CDN service.
-- The 3D gallery downsamples photo textures to a 1024-pixel maximum edge in a browser canvas at runtime to reduce GPU memory. The original files remain unchanged and no derivative photo files are added to the repository.
+- The responsive WebP files beside the originals are locally generated derivatives at 320, 640, and up to 1024 pixels wide. The original JPEGs remain unchanged; the 3D gallery uses the 1024-pixel maximum to limit texture memory.
+- The 3D gallery downsamples photo textures to a 1024-pixel maximum edge in a browser canvas at runtime to reduce GPU memory. Its input images are already capped at 1024 pixels wide; the original JPEGs remain unchanged.
 - The ambient score is synthesized in `src/kage.jsx` with the browser Web Audio API. The project uses no downloaded music or sound recording. The sound preference is stored in the visitor's local browser storage only.
 
 ## Memory content checklist
 
 - Add, remove, or reorder memories in `src/memories.js`; the letter gallery and 3D scene read from that file.
+- For a new photo, generate local 320-, 640-, and up-to-1024-pixel WebP variants and add their paths to that memory's `src` and `srcSet`.
 - Review each memory's title, caption, and alt text. Add a short date and one-line note only when you have supplied the details.
 - Choose which memory appears in the letter's hero by setting `featured: true`, and edit its `heroCaption` if desired.
 
