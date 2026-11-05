@@ -14,6 +14,12 @@ The site self-hosts these Latin variable WOFF2 files from Fontsource. Each typef
 - The 3D gallery downsamples photo textures to a 1024-pixel maximum edge in a browser canvas at runtime to reduce GPU memory. The original files remain unchanged and no derivative photo files are added to the repository.
 - The ambient score is synthesized in `src/kage.jsx` with the browser Web Audio API. The project uses no downloaded music or sound recording.
 
+## Memory content checklist
+
+- Add, remove, or reorder memories in `src/memories.js`; the letter gallery and 3D scene read from that file.
+- Review each memory's title, caption, and alt text. Add a short date and one-line note only when you have supplied the details.
+- Choose which memory appears in the letter's hero by setting `featured: true`, and edit its `heroCaption` if desired.
+
 ## Original project artwork
 
 - `public/og-preview.svg` and `public/og-preview.png` are original artwork made for this site; the social preview contains no personal photos.

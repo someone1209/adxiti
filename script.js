@@ -1,3 +1,5 @@
+import { memories } from './src/memories.js';
+
 (() => {
   const dreamscapeLink = document.querySelector('.dreamscape-link');
   if (dreamscapeLink && window.location.protocol === 'file:') {
@@ -5,6 +7,50 @@
       ? 'landing-pages/kage.html'
       : 'public/landing-pages/kage.html';
   }
+
+  const gallery = document.querySelector('[data-memory-gallery]');
+  const featuredMemory = memories.find((memory) => memory.featured) || memories[0];
+  const featuredImage = document.querySelector('[data-featured-photo]');
+  const featuredCaption = document.querySelector('[data-featured-caption]');
+
+  if (!gallery || !featuredMemory || !featuredImage || !featuredCaption) {
+    throw new Error('Memory gallery markup or memory data is missing.');
+  }
+
+  featuredImage.src = featuredMemory.src;
+  featuredImage.alt = featuredMemory.alt;
+  featuredImage.width = featuredMemory.width;
+  featuredImage.height = featuredMemory.height;
+  featuredCaption.prepend(document.createTextNode(featuredMemory.heroCaption || featuredMemory.caption));
+
+  const galleryContent = document.createDocumentFragment();
+  memories.forEach((memory, index) => {
+    const card = document.createElement('button');
+    card.className = `gallery-card gallery-${memory.layout} reveal`;
+    card.type = 'button';
+    card.dataset.memoryIndex = String(index);
+    card.setAttribute('aria-label', `Open memory: ${memory.title}`);
+
+    const image = document.createElement('img');
+    image.src = memory.src;
+    image.alt = memory.alt;
+    image.width = memory.width;
+    image.height = memory.height;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+
+    const label = document.createElement('span');
+    label.className = 'gallery-label';
+    label.append(document.createTextNode(memory.caption));
+    const heart = document.createElement('i');
+    heart.setAttribute('aria-hidden', 'true');
+    heart.textContent = '♡';
+    label.append(heart);
+
+    card.append(image, label);
+    galleryContent.append(card);
+  });
+  gallery.replaceChildren(galleryContent);
 
   const revealItems = document.querySelectorAll('.reveal');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -85,7 +131,7 @@
     const sourceImage = card.querySelector('img');
     viewerImage.src = sourceImage.src;
     viewerImage.alt = sourceImage.alt;
-    viewerCaption.textContent = card.querySelector('.gallery-label').textContent.trim();
+    viewerCaption.textContent = memories[currentPhoto].caption;
     viewerImage.classList.remove('photo-arrive');
     requestAnimationFrame(() => viewerImage.classList.add('photo-arrive'));
   }
