@@ -22,7 +22,7 @@ All screenshots below were captured locally in Chrome at the listed CSS viewport
 
 ## Next-level responsive captures
 
-These local production-preview screenshots were captured after the shared-memory-data change. Personal photo pixels and the 3D canvas were hidden at capture time; the original photos were not sent to any external service.
+These local production-preview screenshots were refreshed after the responsive-image and mobile-motion changes. Personal photo pixels and the 3D canvas were hidden at capture time; the original photos were not sent to any external service.
 
 ### Letter
 
@@ -38,14 +38,14 @@ These local production-preview screenshots were captured after the shared-memory
 
 ## Lighthouse mobile (local production preview)
 
-Most recently recorded Lighthouse mobile run before the next-level content change, using simulated throttling:
+Latest Lighthouse mobile runs against the local production preview, using simulated throttling:
 
 | Page | Performance | Accessibility | Best Practices | LCP | CLS | TBT |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Letter | 89 | 100 | 100 | 3.2 s | 0 | 0 ms |
-| A Little Universe of You | 96 | 100 | 96 | 2.2 s | 0 | 30 ms |
+| Letter | 92 | 100 | 100 | 2.9 s | 0 | 70 ms |
+| A Little Universe of You | 95 | 100 | 96 | 2.6 s | 0.001 | 70 ms |
 
-Scores are Lighthouse lab results from a local production preview, not field Core Web Vitals. The letter page meets the requested 85+ Performance threshold; measured LCP is still above the 2.5 s field target in this simulated run. The content change added a small shared metadata module; Lighthouse has not yet been rerun for that change.
+Both pages meet the requested 85+ Performance, 95+ Accessibility, and 95+ Best Practices thresholds. These are Lighthouse lab results, not field Core Web Vitals; LCP remains slightly above the 2.5 s field target in these simulated runs.
 
 ## Responsive and browser checks
 
@@ -55,6 +55,8 @@ Production preview checked at 320, 375, 390, 768 and 1440 px on both routes:
 - No external network requests; local fonts load, and `noindex, nofollow` remains on both pages.
 - 3D canvas and scene chunk are absent until the user enters; mobile swipe advances the selected memory.
 - The gallery resizes source textures locally in a browser canvas and adapts renderer pixel ratio based on observed frame rate.
+- The sound preference persists across reloads; the offline worker caches same-origin pages and serves a text-only fallback when navigation is unavailable.
+- Photos use locally generated responsive WebP variants; the original JPEGs remain unchanged and no photo is sent to a third party.
 
 ## Things to fill in when ready
 
