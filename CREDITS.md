@@ -24,6 +24,7 @@ The site self-hosts these Latin variable WOFF2 files from Fontsource. Each typef
 
 - `public/og-preview.svg` and `public/og-preview.png` are original artwork made for this site; the social preview contains no personal photos.
 - `public/favicon.svg` and the CSS gradients, neon orbit, dust and star effects are project artwork; no third-party illustration, texture, or HDRI is used.
+- `public/offline.html` is original, text-only fallback artwork; the offline cache stores same-origin pages and assets in the visitor's browser.
 
 ## Removed from active styling
 

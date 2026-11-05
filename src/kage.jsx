@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { memories } from "./memories.js";
+import { registerServiceWorker } from "./registerServiceWorker.js";
 const PhotoOrbit = lazy(() => import("./PhotoOrbit.jsx"));
 import "./kage.css";
 
@@ -256,4 +257,5 @@ function Dreamscape() {
   );
 }
 
+registerServiceWorker();
 createRoot(document.getElementById("root")).render(<Dreamscape />);

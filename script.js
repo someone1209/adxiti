@@ -1,6 +1,9 @@
 import { memories } from './src/memories.js';
+import { registerServiceWorker } from './src/registerServiceWorker.js';
 
 (() => {
+  registerServiceWorker();
+
   const dreamscapeLink = document.querySelector('.dreamscape-link');
   if (dreamscapeLink && window.location.protocol === 'file:') {
     dreamscapeLink.href = window.location.pathname.includes('/dist/')
