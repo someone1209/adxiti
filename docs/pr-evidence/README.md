@@ -20,16 +20,32 @@ All screenshots below were captured locally in Chrome at the listed CSS viewport
 
 ![Before, gallery at 1440px](before-kage-1440.png) ![After, gallery at 1440px](after-kage-1440.png)
 
+## Next-level responsive captures
+
+These local production-preview screenshots were captured after the shared-memory-data change. Personal photo pixels and the 3D canvas were hidden at capture time; the original photos were not sent to any external service.
+
+### Letter
+
+![Letter page at 375px](next-level-letter-375.png)
+![Letter page at 768px](next-level-letter-768.png)
+![Letter page at 1440px](next-level-letter-1440.png)
+
+### A Little Universe of You
+
+![Gallery page at 375px](next-level-kage-375.png)
+![Gallery page at 768px](next-level-kage-768.png)
+![Gallery page at 1440px](next-level-kage-1440.png)
+
 ## Lighthouse mobile (local production preview)
 
-Lighthouse mobile simulated throttling, latest local build:
+Most recently recorded Lighthouse mobile run before the next-level content change, using simulated throttling:
 
 | Page | Performance | Accessibility | Best Practices | LCP | CLS | TBT |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Letter | 89 | 100 | 100 | 3.2 s | 0 | 0 ms |
 | A Little Universe of You | 96 | 100 | 96 | 2.2 s | 0 | 30 ms |
 
-Scores are Lighthouse lab results from a local production preview, not field Core Web Vitals. The letter page meets the requested 85+ Performance threshold; measured LCP is still above the 2.5 s field target in this simulated run.
+Scores are Lighthouse lab results from a local production preview, not field Core Web Vitals. The letter page meets the requested 85+ Performance threshold; measured LCP is still above the 2.5 s field target in this simulated run. The content change added a small shared metadata module; Lighthouse has not yet been rerun for that change.
 
 ## Responsive and browser checks
 
